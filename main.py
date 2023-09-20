@@ -2,6 +2,25 @@ from configparser import ConfigParser
 from datetime import datetime
 import argparse
 import subprocess
+import logging
+import sys
+
+
+def config_log(log_filename: str):
+    """configure logging module for logging on both file and console"""
+    formatter = logging.Formatter(
+        "%(asctime)s %(levelname)s - %(message)s", datefmt="%Y%m%d-%H:%M:%S"
+    )
+
+    file_handler = logging.FileHandler(log_filename, mode="a", encoding="utf8")
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    console_handler.setLevel(logging.INFO)
+
+    logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
 
 
 def exec_cmd(cmd: str):
@@ -10,6 +29,9 @@ def exec_cmd(cmd: str):
 
 
 if __name__ == "__main__":
+    # -----------------------set logging-------------------------------
+    config_log("aslog.txt")
+
     # -----------------------parse args----------------------------
     parser = argparse.ArgumentParser(description="Probe protocol or Grab web pages")
     parser.add_argument(
@@ -49,11 +71,13 @@ if __name__ == "__main__":
     # ......
 
     # ----------------------claim information----------------------
-    # ......
+    logging.info("New task")
 
     # ----------------------port-by-port grabing-------------------
     for p in target_ports:
         port = p.strip()
+        logging.info(f"Start for target port: {port}")
+
         # get zgrab multiple.ini ready
         with open("utils/multi.ini", "w") as f:
             f.write(
@@ -83,7 +107,6 @@ sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac
 sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac {gateway_mac} -f {lzr_results} -feedZGrab | \
 utils/zgrab2 multiple -c utils/multi.ini -o {zgrab_results}"""
 
-        if args.dryrun:
-            print(cmd + "\n")
-        else:
+        logging.info(f"Command to use: {cmd}")
+        if not args.dryrun:
             exec_cmd(cmd)
