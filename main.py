@@ -43,6 +43,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--mode", "-m", help="probe or grab", type=str, default="probe")
     parser.add_argument(
+        "--top100", "-t", help="specify the top 1-100 ports", type=int, default=0
+    )
+    parser.add_argument(
         "--dryrun",
         "-d",
         help="dry run without actual probing or grabbing",
@@ -55,6 +58,9 @@ if __name__ == "__main__":
     config.read("conf.ini", encoding="utf-8")
 
     target_ports = config["asgrab"]["target-ports"].split(",")
+    if args.top100 >= 1 and args.top100 <= 100:
+        target_ports = config["asgrab"]["top100ports"].split(",")[: args.top100 - 1]
+
     allowlist = config["asgrab"]["target-hosts"]
     blocklist = config["asgrab"]["zmap-blocklist"]
 
