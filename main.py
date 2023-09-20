@@ -2,7 +2,6 @@ from configparser import ConfigParser
 from datetime import datetime
 import argparse
 import subprocess
-import logging
 
 
 def exec_cmd(cmd: str):
@@ -13,13 +12,19 @@ def exec_cmd(cmd: str):
 if __name__ == "__main__":
     # -----------------------parse args----------------------------
     parser = argparse.ArgumentParser(description="Probe protocol or Grab web pages")
-    parser.add_argument("--mode", "-m", help="probe or grab", type=str, default="probe")
     parser.add_argument(
         "--version",
         "-v",
         action="version",
         version="%(prog)s version : v 0.01",
         help="show the version",
+    )
+    parser.add_argument("--mode", "-m", help="probe or grab", type=str, default="probe")
+    parser.add_argument(
+        "--dryrun",
+        "-d",
+        help="dry run without actual probing or grabbing",
+        action="store_true",
     )
     args = parser.parse_args()
 
@@ -68,6 +73,7 @@ if __name__ == "__main__":
     endpoint="/"
     max-redirects=1"""
             )
+
         cmd = ""
         if args.mode == "probe":
             cmd = f"""sudo utils/zmap -w {allowlist} -b {blocklist} -p {port} --output-filter="success = 1 && repeat = 0" -f "saddr,daddr,sport,dport,seqnum,acknum,window" -O json -i {send_interface} -S {source_ip} -G {gateway_mac} | \
@@ -76,4 +82,8 @@ sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac
             cmd = f"""sudo utils/zmap -w {allowlist} -b {blocklist} -p {port} --output-filter="success = 1 && repeat = 0" -f "saddr,daddr,sport,dport,seqnum,acknum,window" -O json -i {send_interface} -S {source_ip} -G {gateway_mac} | \
 sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac {gateway_mac} -f {lzr_results} -feedZGrab | \
 utils/zgrab2 multiple -c utils/multi.ini -o {zgrab_results}"""
-        exec_cmd(cmd)
+
+        if args.dryrun:
+            print(cmd + "\n")
+        else:
+            exec_cmd(cmd)
