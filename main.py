@@ -14,18 +14,43 @@ def config_log(log_filename: str):
 
     file_handler = logging.FileHandler(log_filename, mode="a", encoding="utf8")
     file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging.DEBUG)  # log more verbose info to file
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
     console_handler.setLevel(logging.INFO)
 
-    logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
+    logging.basicConfig(
+        level=min(file_handler.level, console_handler.level),
+        handlers=[file_handler, console_handler],
+    )
 
 
 def exec_cmd(cmd: str):
     """execute shell command interactively in real-time"""
     subprocess.run(cmd, shell=True, stdin=0, stdout=1, stderr=2)
+
+
+def set_multi_ini(port: str):
+    """get zgrab multiple.ini ready for specific port"""
+    with open("utils/multi.ini", "w") as f:
+        f.write(
+            f"""[Application Options]
+[http]
+name="http"
+trigger="http"
+port={port}
+user-agent="Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36 Edg/114.0.1823.43"
+endpoint="/"
+max-redirects=1
+[http]
+name="https"
+trigger="tls"
+port={port}
+user-agent="Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36 Edg/114.0.1823.43"
+endpoint="/"
+max-redirects=1"""
+        )
 
 
 if __name__ == "__main__":
@@ -83,26 +108,7 @@ if __name__ == "__main__":
     for p in target_ports:
         port = p.strip()
         logging.info(f"Start for target port: {port}")
-
-        # get zgrab multiple.ini ready
-        with open("utils/multi.ini", "w") as f:
-            f.write(
-                f"""[Application Options]
-    [http]
-    name="http"
-    trigger="http"
-    port={port}
-    user-agent="Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36 Edg/114.0.1823.43"
-    endpoint="/"
-    max-redirects=1
-    [http]
-    name="https"
-    trigger="tls"
-    port={port}
-    user-agent="Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36 Edg/114.0.1823.43"
-    endpoint="/"
-    max-redirects=1"""
-            )
+        set_multi_ini(port)
 
         cmd = ""
         if args.mode == "probe":
@@ -112,7 +118,9 @@ sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac
             cmd = f"""sudo utils/zmap -w {allowlist} -b {blocklist} -p {port} --output-filter="success = 1 && repeat = 0" -f "saddr,daddr,sport,dport,seqnum,acknum,window" -O json -i {send_interface} -S {source_ip} -G {gateway_mac} | \
 sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac {gateway_mac} -f {lzr_results} -feedZGrab | \
 utils/zgrab2 multiple -c utils/multi.ini -o {zgrab_results}"""
+        else:
+            logging.error(f"Invalid mode selected: {args.mode}")
 
-        logging.info(f"Command to use: {cmd}")
+        logging.debug(f"Command to use: {cmd}")
         if not args.dryrun:
             exec_cmd(cmd)
