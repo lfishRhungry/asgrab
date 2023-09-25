@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # ......
 
     # ----------------------claim information----------------------
-    logging.info("New task")
+    logging.info(f"New task start ({cur_time})")
 
     # ----------------------actual scanning, probing or grabing-------------------
     cmd = ""
@@ -127,3 +127,5 @@ utils/zgrab2 multiple -c utils/multi.ini -o {zgrab_results}"""
     logging.debug(f"Command to use: {cmd}")
     if not args.dryrun:
         exec_cmd(cmd)
+
+    logging.info(f"Task finished ({cur_time})")
