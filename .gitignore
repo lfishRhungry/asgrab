@@ -1,4 +1,5 @@
 utils/multi.ini
-results/
+results/*.json
+results/*.csv
 aslog.txt
 allowlist.txt
