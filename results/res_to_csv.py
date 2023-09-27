@@ -51,6 +51,7 @@ if __name__ == "__main__":
                 try:
                     data: dict = json.loads(line)
                 except:
+                    display_bar.update(1)
                     continue
                 res_df.loc[len(res_df)] = {
                     "IP": data["saddr"],
