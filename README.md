@@ -8,6 +8,26 @@ LZR was modified to output port info in -feedZGrab mode.
 
 ZGrab2 was modified to grab content on different ports in one round.
 
+## Iptables filter
+
+Add a rule to drop RST(out):
+
+```
+sudo iptables -A OUTPUT -p tcp --tcp-flags RST RST -s $(source-ip) -j DROP
+```
+
+Check the line number of rule:
+
+```
+sudo iptables -L --line-numbers
+```
+
+Delete specific rule by line number:
+
+```
+sudo iptables -D OUTPUT <line_number>
+```
+
 ## Resources
 
 Use `awk` to convert specific IP set to IP ranges for ASGrab.
