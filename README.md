@@ -41,5 +41,5 @@ awk 'NR>2 {print $4}' china_telecom.tsv > allowlist.txt
 Convert IP range to CIDR and extract:
 
 ```
-awk 'NR>3 {print $1,$2}' Shandong_Jinan.tsv | xargs netmask -c | sed 's/^[ \t]*//g' > allowlist.txt
+awk -v OFS=":" 'NR>3 {print $1,$2}' Shandong_Jinan.tsv | xargs netmask -c | sed 's/^[ \t]*//g' > allowlist.txt
 ```
