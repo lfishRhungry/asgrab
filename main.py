@@ -113,10 +113,10 @@ if __name__ == "__main__":
     cmd = ""
     if args.mode == "probe":
         cmd = f"""sudo utils/zmap -w {allowlist} -b {blocklist} -p {target_ports} --output-filter="success = 1 && repeat = 0" -f "saddr,daddr,sport,dport,seqnum,acknum,window" -O json -i {send_interface} -S {source_ip} -G {gateway_mac} | \
-sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac {gateway_mac} -f {lzr_results}"""
+sudo utils/lzr --handshakes mytls -sendInterface {send_interface} -gatewayMac {gateway_mac} -f {lzr_results}"""
     elif args.mode == "grab":
         cmd = f"""sudo utils/zmap -w {allowlist} -b {blocklist} -p {target_ports} --output-filter="success = 1 && repeat = 0" -f "saddr,daddr,sport,dport,seqnum,acknum,window" -O json -i {send_interface} -S {source_ip} -G {gateway_mac} | \
-sudo utils/lzr --handshakes http,tls -sendInterface {send_interface} -gatewayMac {gateway_mac} -f {lzr_results} -feedZGrab | \
+sudo utils/lzr --handshakes mytls -sendInterface {send_interface} -gatewayMac {gateway_mac} -f {lzr_results} -feedZGrab | \
 utils/zgrab2 multiple -c utils/multi.ini -o {zgrab_results}"""
     elif args.mode == "scan":
         cmd = f'sudo utils/zmap -w {allowlist} -b {blocklist} -p {target_ports} --output-filter="success = 1 && repeat = 0" -f "saddr,daddr,sport,dport,seqnum,acknum,window" -O json -i {send_interface} -S {source_ip} -G {gateway_mac} -o {zmap_results}'
