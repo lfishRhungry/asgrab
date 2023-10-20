@@ -10,6 +10,8 @@ ZGrab2 was modified to grab content on different ports in one round.
 
 ## Iptables filter
 
+LZR will use connections building by ZMap to do application-layer probing. To avoid disturbing of Linux TCP/IP stack RSTs, we should add iptable rules every time we reboot the OS.
+
 Add a rule to drop RST(out):
 
 ```
